@@ -1,0 +1,23 @@
+# Use Node.js LTS base image
+FROM node:18-alpine
+
+# Set working directory for backend
+WORKDIR /app/backend
+
+# Copy dependency configs
+COPY backend/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy backend source code
+COPY backend/ ./
+
+# Build TypeScript code
+RUN npm run build
+
+# Expose server port
+EXPOSE 5001
+
+# Command to run backend
+CMD ["npm", "start"]

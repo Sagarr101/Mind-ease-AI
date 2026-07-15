@@ -1,0 +1,96 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                   String              @id @default(uuid())
+  username             String              @unique
+  email                String              @unique
+  passwordHash         String
+  role                 String              @default("user")
+  streakCurrent        Int                 @default(0)
+  streakLongest        Int                 @default(0)
+  streakLastActive     DateTime?
+  passwordResetToken   String?             @unique
+  passwordResetExpires DateTime?
+  theme                String              @default("dark")
+  remindersEnabled     Boolean             @default(true)
+  createdAt            DateTime            @default(now)
+  updatedAt            DateTime            @updatedAt
+  moods                Mood[]
+  journals             Journal[]
+  meditationSessions   MeditationSession[]
+  wellnessReports      WellnessReport[]
+  notifications        Notification[]
+  chatMessages         ChatMessage[]
+}
+
+model Mood {
+  id       String   @id @default(uuid())
+  userId   String
+  score    Int
+  tags     String[]
+  note     String?
+  loggedAt DateTime @default(now)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Journal {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  content   String
+  moodScore Int?
+  sentiment String
+  createdAt DateTime @default(now)
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MeditationSession {
+  id              String   @id @default(uuid())
+  userId          String
+  title           String
+  durationMinutes Int
+  completedAt     DateTime @default(now)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WellnessReport {
+  id                     String   @id @default(uuid())
+  userId                 String
+  startDate              DateTime
+  endDate                DateTime
+  averageMood            Float
+  meditationTotalMinutes Int
+  journalsWritten        Int
+  insights               String
+  createdAt              DateTime @default(now)
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  type      String
+  createdAt DateTime @default(now)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  userId    String
+  sender    String
+  content   String
+  sentiment String?
+  createdAt DateTime @default(now)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

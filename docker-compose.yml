@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: mindease-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: mindease-backend
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - MONGODB_URI=mongodb://mongodb:27017/mindease
+      - JWT_SECRET=mindease_compose_production_jwt_secret_token_12345
+      - NODE_ENV=production
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      - mongodb
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: mindease-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5001
+      - PORT=3000
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:

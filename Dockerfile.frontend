@@ -1,0 +1,27 @@
+# Use Node.js LTS base image
+FROM node:18-alpine
+
+# Set working directory for frontend
+WORKDIR /app/frontend
+
+# Copy dependency configs
+COPY frontend/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy frontend source code
+COPY frontend/ ./
+
+# Disable Next.js telemetry during build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_API_URL=http://localhost:5001
+
+# Build NextJS production bundles
+RUN npm run build
+
+# Expose production port
+EXPOSE 3000
+
+# Start NextJS standalone server
+CMD ["npm", "start"]
