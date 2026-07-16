@@ -11,6 +11,9 @@ import meditationRouter from './routes/meditation';
 import reportRouter from './routes/report';
 import notificationRouter from './routes/notification';
 import chatRouter from './routes/chat';
+import insightsRouter from './routes/insights';
+import conversationsRouter from './routes/conversations';
+import knowledgebaseRouter from './routes/knowledgebase';
 
 const app = express();
 
@@ -50,6 +53,9 @@ app.use('/api/meditation', meditationRouter);
 app.use('/api/report', reportRouter);
 app.use('/api/notification', notificationRouter);
 app.use('/api/chat', chatRouter);
+app.use('/api/insights', insightsRouter);
+app.use('/api/conversations', conversationsRouter);
+app.use('/api/knowledgebase', knowledgebaseRouter);
 
 // Global Error Handler
 app.use(errorHandler);

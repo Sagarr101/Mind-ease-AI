@@ -2,8 +2,9 @@
 
 MindEase AI is a production-ready, full-stack mental health application designed to assist users in tracking their emotional health and connecting with an empathetic AI Therapist. Built with a modern, glassmorphic design system using Next.js 15, Express.js, MongoDB, and Socket.io.
 
-## Features
+## ✨ Features (v2.0 - Upgraded)
 
+### Core Features
 - 👤 **Secure Authentication**: JWT-based session management.
 - 🔥 **Wellness Streaks**: Automated login-streak tracking.
 - 💬 **AI Therapist Chat**: Real-time Socket.io messages supported by a Cognitive Behavioral Therapy (CBT) conversational agent.
@@ -12,6 +13,24 @@ MindEase AI is a production-ready, full-stack mental health application designed
 - 🧘 **Meditation Center**: Immersive countdown timers and cataloged guides.
 - 📈 **Analytics & Reports**: Visualized mood/relaxation graphs and weekly reports.
 - 🔔 **Alerts & Notifications**: Notifications for streak milestones and compiled reports.
+
+### NEW in v2.0 🚀
+- 🧠 **Long-Term AI Memory**: Conversations persist across sessions; AI references previous discussions
+- 📚 **RAG (Retrieval-Augmented Generation)**: 9 CBT knowledge base documents with intelligent search
+- 🚨 **Crisis Detection**: Detects crisis phrases and provides immediate resources
+- 😊 **Multi-Label Emotion Detection**: 16 emotion categories track mood nuances
+- 📈 **Personalized Insights**: Weekly analytics on mood trends, meditation habits, journaling patterns
+- 🕐 **Memory Timeline**: View full conversation history organized by date
+- 📊 **Emotion Analytics**: Visualize emotional patterns over time
+- 📋 **Insights Dashboard**: AI-generated wellness recommendations
+- 📖 **Knowledge Resources**: Searchable CBT resource library
+- 🛡️ **Safety Center**: Crisis resources and coping strategies
+
+## Documentation
+
+- 📖 **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Comprehensive feature documentation
+- 🚀 **[QUICKSTART.md](QUICKSTART.md)** - Quick setup and testing guide
+- 🏗️ **[backend/src/architecture.md](backend/src/architecture.md)** - Backend architecture overview
 
 ## Project Structure
 

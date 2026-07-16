@@ -4,7 +4,7 @@ import { AuthRequest } from '../middleware/auth';
 
 export const getNotifications = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user?._id;
+    const userId = req.user?.id;
     if (!userId) {
       res.status(401).json({ success: false, message: 'Unauthorized' });
       return;
@@ -24,7 +24,7 @@ export const getNotifications = async (req: AuthRequest, res: Response, next: Ne
 export const markAsRead = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const userId = req.user?._id;
+    const userId = req.user?.id;
 
     const notification = await Notification.findOneAndUpdate(
       { _id: id, userId },
@@ -48,7 +48,7 @@ export const markAsRead = async (req: AuthRequest, res: Response, next: NextFunc
 
 export const markAllAsRead = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user?._id;
+    const userId = req.user?.id;
     if (!userId) {
       res.status(401).json({ success: false, message: 'Unauthorized' });
       return;

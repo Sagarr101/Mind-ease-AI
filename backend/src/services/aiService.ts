@@ -165,17 +165,35 @@ const getLocalCBTReply = (message: string): { reply: string; sentiment: string }
 // Main function handling external LLM queries or falling back locally
 export const analyzeSentimentAndRespond = async (
   userId: string,
-  userMessage: string
+  conversationIdOrMessage: string,
+  messageOrUndefined?: string
 ): Promise<{ reply: string; sentiment: string }> => {
+  // Support both old (userId, message) and new (userId, conversationId, message) signatures
+  const conversationId = messageOrUndefined ? conversationIdOrMessage : undefined;
+  const userMessage = messageOrUndefined || conversationIdOrMessage;
   const geminiKey = process.env.GEMINI_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
 
-  // SYSTEM PROMPT FOR AI THERAPIST
-  const systemPrompt = `You are MindEase AI, an empathetic, supportive, and professional AI mental health therapist.
+  // Build contextual system prompt
+  let systemPrompt = `You are MindEase AI, an empathetic, supportive, and professional AI mental health therapist.
 Your response must employ principles of Cognitive Behavioral Therapy (CBT), active listening, and mindfulness guidance.
 Always validate user feelings, maintain a calm and reassuring tone, provide constructive cognitive reframing, and end with an open-ended therapeutic question.
 Do not prescribe medication, diagnose mental health conditions, or make medical claims. Keep responses conversational, readable (using paragraphs), and concise (2-3 short paragraphs).
 At the very end of your response, output a single line format: [SENTIMENT: <sentiment>] where <sentiment> is one of: Joy, Anxiety, Sadness, Anger, Exhaustion, Neutral.`;
+
+  // Add long-term memory context if conversationId is provided
+  if (conversationId) {
+    try {
+      const chatService = require('../services/chatService').default;
+      const history = await chatService.getConversationHistory(conversationId, 10);
+      if (history && history.length > 0) {
+        const recentContext = history.map((m: any) => `${m.role === 'user' ? 'User' : 'Therapist'}: ${m.content}`).join('\n');
+        systemPrompt += `\n\nRecent Conversation History:\n${recentContext}`;
+      }
+    } catch (e) {
+      // Silently skip if history retrieval fails
+    }
+  }
 
   // 1. Try Gemini API
   if (geminiKey) {

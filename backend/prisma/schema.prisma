@@ -20,7 +20,7 @@ model User {
   passwordResetExpires DateTime?
   theme                String              @default("dark")
   remindersEnabled     Boolean             @default(true)
-  createdAt            DateTime            @default(now)
+  createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
   moods                Mood[]
   journals             Journal[]
@@ -36,7 +36,7 @@ model Mood {
   score    Int
   tags     String[]
   note     String?
-  loggedAt DateTime @default(now)
+  loggedAt DateTime @default(now())
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -47,7 +47,7 @@ model Journal {
   content   String
   moodScore Int?
   sentiment String
-  createdAt DateTime @default(now)
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -57,7 +57,7 @@ model MeditationSession {
   userId          String
   title           String
   durationMinutes Int
-  completedAt     DateTime @default(now)
+  completedAt     DateTime @default(now())
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -70,7 +70,7 @@ model WellnessReport {
   meditationTotalMinutes Int
   journalsWritten        Int
   insights               String
-  createdAt              DateTime @default(now)
+  createdAt              DateTime @default(now())
   user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -81,7 +81,7 @@ model Notification {
   message   String
   read      Boolean  @default(false)
   type      String
-  createdAt DateTime @default(now)
+  createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -91,6 +91,6 @@ model ChatMessage {
   sender    String
   content   String
   sentiment String?
-  createdAt DateTime @default(now)
+  createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

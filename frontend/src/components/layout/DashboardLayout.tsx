@@ -20,7 +20,12 @@ import {
   Menu, 
   X,
   Check,
-  Settings
+  Settings,
+  Brain,
+  TrendingUp,
+  History,
+  BookMarked,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -33,6 +38,13 @@ const NAV_ITEMS = [
   { label: 'Analytics', path: '/analytics', icon: BarChart3 },
   { label: 'Wellness Reports', path: '/reports', icon: FileText },
   { label: 'Settings', path: '/settings', icon: Settings },
+  // NEW v2.0 Features
+  { label: 'Memory Timeline', path: '/memory-timeline', icon: History },
+  { label: 'Emotion Analytics', path: '/emotion-analytics', icon: Brain },
+  { label: 'Insights', path: '/insights', icon: TrendingUp },
+  { label: 'Conversation History', path: '/conversation-history', icon: MessageSquare },
+  { label: 'Knowledge Base', path: '/knowledge-resources', icon: BookMarked },
+  { label: 'Safety Center', path: '/safety-center', icon: AlertCircle },
 ];
 
 export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {

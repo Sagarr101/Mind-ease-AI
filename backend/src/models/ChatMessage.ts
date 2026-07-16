@@ -1,23 +1,30 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 
 export interface IChatMessage extends Document {
-  userId: Types.ObjectId;
+  userId: string;
+  conversationId?: string | null;
   sender: 'user' | 'therapist';
   content: string;
-  sentiment?: string; // Captured sentiment tag (e.g. anxious, sad, neutral)
+  sentiment?: string;
+  emotions?: Record<string, number>;
   createdAt: Date;
 }
 
 const ChatMessageSchema = new Schema<IChatMessage>({
   userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: true,
+    index: true,
   },
   sender: {
     type: String,
     enum: ['user', 'therapist'],
     required: true,
+  },
+  conversationId: {
+    type: String,
+    default: null,
+    index: true,
   },
   content: {
     type: String,
@@ -27,6 +34,10 @@ const ChatMessageSchema = new Schema<IChatMessage>({
   sentiment: {
     type: String,
     default: 'Neutral',
+  },
+  emotions: {
+    type: Object,
+    default: undefined,
   },
   createdAt: {
     type: Date,

@@ -3,11 +3,18 @@ import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
 import { ChatMessage } from '../models/ChatMessage';
+import { Conversation } from '../models/Conversation';
 import { analyzeSentimentAndRespond, classifyLocalSentiment } from '../services/aiService';
+import chatService from '../services/chatService';
+import crisisDetectionService from '../services/crisisDetectionService';
+import emotionService from '../services/emotionService';
+import emotionRepository from '../repositories/emotionRepository';
+import { logger } from '../utils/logger';
 
 interface SocketData {
   userId: string;
   username: string;
+  conversationId?: string;
 }
 
 export const initSocket = (server: HttpServer): Server => {
@@ -43,18 +50,32 @@ export const initSocket = (server: HttpServer): Server => {
       socket.data = {
         userId: user._id.toString(),
         username: user.username,
+        conversationId: undefined,
       };
 
       next();
     } catch (err) {
-      console.error('Socket authentication failed:', err);
+      logger.error('Socket authentication failed:', err);
       return next(new Error('Authentication error: Invalid credentials'));
     }
   });
 
-  io.on('connection', (socket: Socket) => {
-    const { userId, username } = socket.data as SocketData;
-    console.log(`[Socket] User connected: ${username} (ID: ${userId})`);
+  io.on('connection', async (socket: Socket) => {
+    let { userId, username } = socket.data as SocketData;
+    logger.info(`[Socket] User connected: ${username} (ID: ${userId})`);
+
+    // Create or retrieve the default conversation for this user
+    let conversationId = socket.data.conversationId;
+    if (!conversationId) {
+      const existing = await Conversation.findOne({ userId }).lean();
+      if (existing) {
+        conversationId = existing._id.toString();
+      } else {
+        const created = await Conversation.create({ userId, title: 'Default Chat', participants: [userId] });
+        conversationId = created._id.toString();
+      }
+      socket.data.conversationId = conversationId;
+    }
 
     // Join a private room unique to this user
     socket.join(userId);
@@ -65,50 +86,83 @@ export const initSocket = (server: HttpServer): Server => {
         const { content } = data;
         if (!content || content.trim() === '') return;
 
-        console.log(`[Socket] Message from ${username}: "${content}"`);
+        logger.info(`[Socket] Message from ${username}: "${content}"`);
 
-        // 1. Process user message
-        const userSentiment = classifyLocalSentiment(content);
-        const userMsg = await ChatMessage.create({
+        // 1. Detect emotions in user input
+        const emotionResult = emotionService.detectEmotions(content);
+        
+        // Store emotion record for analytics
+        await emotionRepository.addEmotionRecord({
           userId,
-          sender: 'user',
-          content,
-          sentiment: userSentiment,
+          detectedAt: new Date(),
+          dominantEmotion: emotionResult.dominant,
+          confidence: emotionResult.confidence,
+          distribution: emotionResult.distribution,
         });
 
-        // 2. Broadcast user message back to user's screen
+        // 2. Check for crisis content before responding
+        const crisisCheck = await crisisDetectionService.detectAndRespond(userId, content);
+        if (crisisCheck.isCrisis) {
+          // Save user message
+          await chatService.saveUserMessage(userId, conversationId, content, {
+            sentiment: 'Crisis',
+            emotions: emotionResult.distribution,
+          });
+          
+          const userMsg = await ChatMessage.findOne({ userId, conversationId, sender: 'user', content }).lean();
+          io.to(userId).emit('new_message', userMsg);
+
+          // Send crisis response
+          io.to(userId).emit('crisis_alert', {
+            compassionateMessage: crisisCheck.compassionateReply,
+            resources: crisisCheck.resources,
+          });
+          return;
+        }
+
+        // 3. Save user message with conversation ID and emotion metadata
+        const userSentiment = classifyLocalSentiment(content);
+        await chatService.saveUserMessage(userId, conversationId, content, {
+          sentiment: userSentiment,
+          emotions: emotionResult.distribution,
+        });
+        
+        const userMsg = await ChatMessage.findOne({ userId, conversationId, sender: 'user', content }).lean();
+
+        // 4. Broadcast user message back to user's screen
         io.to(userId).emit('new_message', userMsg);
 
-        // 3. Trigger typing status for a realistic therapist feel
+        // 5. Trigger typing status for a realistic therapist feel
         io.to(userId).emit('typing_start');
 
-        // 4. Query AI service (which falls back locally if no API keys)
-        const { reply, sentiment } = await analyzeSentimentAndRespond(userId, content);
+        // 6. Build context from conversation history and query AI with long-term memory
+        const { reply, sentiment } = await analyzeSentimentAndRespond(userId, conversationId, content);
 
-        // 5. Artificial typing lag (1.2 seconds) to display typing visualizer
+        // 7. Artificial typing lag (1.2 seconds) to display typing visualizer
         await new Promise((resolve) => setTimeout(resolve, 1200));
 
-        // 6. Save AI therapist response
-        const therapistMsg = await ChatMessage.create({
-          userId,
-          sender: 'therapist',
-          content: reply,
+        // 8. Save AI therapist response with conversation ID and emotion analysis
+        const responseEmotions = emotionService.detectEmotions(reply);
+        await chatService.saveAssistantMessage(userId, conversationId, reply, {
           sentiment,
+          emotions: responseEmotions.distribution,
         });
+        
+        const therapistMsg = await ChatMessage.findOne({ userId, conversationId, sender: 'assistant', content: reply }).lean();
 
-        // 7. Stop typing state and broadcast therapist message
+        // 9. Stop typing state and broadcast therapist message
         io.to(userId).emit('typing_stop');
         io.to(userId).emit('new_message', therapistMsg);
 
       } catch (error) {
-        console.error('[Socket] Error processing send_message event:', error);
+        logger.error('[Socket] Error processing send_message event:', error);
         socket.emit('error', { message: 'Failed to process message' });
         io.to(userId).emit('typing_stop');
       }
     });
 
     socket.on('disconnect', () => {
-      console.log(`[Socket] User disconnected: ${username}`);
+      logger.info(`[Socket] User disconnected: ${username}`);
     });
   });
 

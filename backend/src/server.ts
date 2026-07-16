@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import app from './app';
 import { connectDB } from './config/db';
 import { initSocket } from './config/socket';
+import { initializeKnowledgeBase } from './utils/initializeKB';
 
 // Load Environment Variables
 dotenv.config();
@@ -12,6 +13,9 @@ const PORT = process.env.PORT || 5001;
 const startServer = async () => {
   // Connect to Database
   await connectDB();
+
+  // Initialize knowledge base with CBT documents
+  await initializeKnowledgeBase();
 
   // Create HTTP Server wrapping the Express app
   const server = createServer(app);

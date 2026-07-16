@@ -66,3 +66,62 @@ export interface INotification {
   type: 'streak' | 'report' | 'system';
   createdAt: string;
 }
+
+// ===== NEW v2.0 Types =====
+
+export interface IConversation {
+  _id: string;
+  userId: string;
+  title?: string;
+  participants: string[];
+  lastActivity?: Date;
+  updatedAt?: Date;
+  createdAt?: Date;
+}
+
+export interface IMessage {
+  _id: string;
+  userId: string;
+  conversationId: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+  sentiment?: string;
+  emotions?: Record<string, number>;
+}
+
+export interface IEmotion {
+  _id: string;
+  userId: string;
+  dominantEmotion: string;
+  confidence: number;
+  distribution: Record<string, number>;
+  detectedAt: Date;
+}
+
+export interface IInsight {
+  _id: string;
+  userId: string;
+  title: string;
+  description: string;
+  metric?: string;
+  value?: any;
+  generatedAt: Date;
+}
+
+export interface IKnowledgeBase {
+  _id: string;
+  title: string;
+  content: string;
+  source?: string;
+  chunks?: string[];
+  createdAt?: Date;
+}
+
+export interface ICrisisEvent {
+  _id: string;
+  userId: string;
+  message: string;
+  status: 'detected' | 'resolved' | 'escalated';
+  reportedAt?: Date;
+}

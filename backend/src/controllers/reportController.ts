@@ -8,7 +8,7 @@ import { Notification } from '../models/Notification';
 
 export const getReports = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user?._id;
+    const userId = req.user?.id;
 
     if (!userId) {
       res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -28,7 +28,7 @@ export const getReports = async (req: AuthRequest, res: Response, next: NextFunc
 
 export const generateReport = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user?._id;
+    const userId = req.user?.id;
     if (!userId) {
       res.status(401).json({ success: false, message: 'Unauthorized' });
       return;

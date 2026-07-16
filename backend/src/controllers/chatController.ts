@@ -4,7 +4,7 @@ import { AuthRequest } from '../middleware/auth';
 
 export const getChatHistory = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user?._id;
+    const userId = req.user?.id;
     if (!userId) {
       res.status(401).json({ success: false, message: 'Unauthorized' });
       return;
@@ -23,7 +23,7 @@ export const getChatHistory = async (req: AuthRequest, res: Response, next: Next
 
 export const clearChatHistory = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user?._id;
+    const userId = req.user?.id;
     if (!userId) {
       res.status(401).json({ success: false, message: 'Unauthorized' });
       return;

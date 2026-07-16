@@ -5,7 +5,7 @@ import { AuthRequest } from '../middleware/auth';
 export const logMeditation = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { title, durationMinutes } = req.body;
-    const userId = req.user?._id;
+    const userId = req.user?.id;
 
     if (!userId) {
       res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -29,7 +29,7 @@ export const logMeditation = async (req: AuthRequest, res: Response, next: NextF
 
 export const getMeditationSessions = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user?._id;
+    const userId = req.user?.id;
 
     if (!userId) {
       res.status(401).json({ success: false, message: 'Unauthorized' });

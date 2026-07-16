@@ -6,7 +6,7 @@ import { classifyLocalSentiment } from '../services/aiService';
 export const createJournal = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { title, content, moodScore } = req.body;
-    const userId = req.user?._id;
+    const userId = req.user?.id;
 
     if (!userId) {
       res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -35,7 +35,7 @@ export const createJournal = async (req: AuthRequest, res: Response, next: NextF
 
 export const getJournals = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user?._id;
+    const userId = req.user?.id;
 
     if (!userId) {
       res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -56,7 +56,7 @@ export const getJournals = async (req: AuthRequest, res: Response, next: NextFun
 export const getJournalById = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const userId = req.user?._id;
+    const userId = req.user?.id;
 
     const journal = await Journal.findOne({ _id: id, userId });
     if (!journal) {
@@ -76,7 +76,7 @@ export const getJournalById = async (req: AuthRequest, res: Response, next: Next
 export const deleteJournal = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const userId = req.user?._id;
+    const userId = req.user?.id;
 
     const journal = await Journal.findOneAndDelete({ _id: id, userId });
     if (!journal) {
