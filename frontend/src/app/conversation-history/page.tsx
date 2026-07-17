@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { api } from '../../lib/api';
@@ -19,7 +19,7 @@ interface ChatMessage {
   emotions?: Record<string, number>;
 }
 
-export default function ConversationHistoryPage() {
+function ConversationHistoryContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const conversationId = searchParams.get('id');
@@ -151,5 +151,21 @@ export default function ConversationHistoryPage() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function ConversationHistoryPage() {
+  return (
+    <Suspense fallback={
+      <DashboardLayout>
+        <div className="max-w-5xl mx-auto space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-20 glass-panel rounded-2xl border border-white/5 animate-pulse" />
+          ))}
+        </div>
+      </DashboardLayout>
+    }>
+      <ConversationHistoryContent />
+    </Suspense>
   );
 }
