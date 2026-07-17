@@ -2,7 +2,7 @@ import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../config/db';
-import { ChatMessage } from '../models/ChatMessage';
+import { Message } from '../models/Message';
 import { Conversation } from '../models/Conversation';
 import { analyzeSentimentAndRespond, classifyLocalSentiment } from '../services/aiService';
 import chatService from '../services/chatService';
@@ -106,13 +106,12 @@ export const initSocket = (server: HttpServer): Server => {
         const crisisCheck = await crisisDetectionService.detectAndRespond(userId, content);
         if (crisisCheck.isCrisis) {
           // Save user message
-          await chatService.saveUserMessage(userId, conversationId, content, {
+          const savedUserMsg = await chatService.saveUserMessage(userId, conversationId, content, {
             sentiment: 'Crisis',
             emotions: emotionResult.distribution,
           });
-          
-          const userMsg = await ChatMessage.findOne({ userId, conversationId, sender: 'user', content }).lean();
-          io.to(userId).emit('new_message', userMsg);
+
+          io.to(userId).emit('new_message', savedUserMsg);
 
           // Send crisis response
           io.to(userId).emit('crisis_alert', {
@@ -124,15 +123,13 @@ export const initSocket = (server: HttpServer): Server => {
 
         // 3. Save user message with conversation ID and emotion metadata
         const userSentiment = classifyLocalSentiment(content);
-        await chatService.saveUserMessage(userId, conversationId, content, {
+        const savedUserMsg = await chatService.saveUserMessage(userId, conversationId, content, {
           sentiment: userSentiment,
           emotions: emotionResult.distribution,
         });
-        
-        const userMsg = await ChatMessage.findOne({ userId, conversationId, sender: 'user', content }).lean();
 
         // 4. Broadcast user message back to user's screen
-        io.to(userId).emit('new_message', userMsg);
+        io.to(userId).emit('new_message', savedUserMsg);
 
         // 5. Trigger typing status for a realistic therapist feel
         io.to(userId).emit('typing_start');
@@ -145,16 +142,14 @@ export const initSocket = (server: HttpServer): Server => {
 
         // 8. Save AI therapist response with conversation ID and emotion analysis
         const responseEmotions = emotionService.detectEmotions(reply);
-        await chatService.saveAssistantMessage(userId, conversationId, reply, {
+        const savedTherapistMsg = await chatService.saveAssistantMessage(userId, conversationId, reply, {
           sentiment,
           emotions: responseEmotions.distribution,
         });
-        
-        const therapistMsg = await ChatMessage.findOne({ userId, conversationId, sender: 'assistant', content: reply }).lean();
 
         // 9. Stop typing state and broadcast therapist message
         io.to(userId).emit('typing_stop');
-        io.to(userId).emit('new_message', therapistMsg);
+        io.to(userId).emit('new_message', savedTherapistMsg);
 
       } catch (error) {
         logger.error('[Socket] Error processing send_message event:', error);
