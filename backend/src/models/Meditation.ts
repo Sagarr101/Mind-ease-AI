@@ -1,7 +1,7 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 
 export interface IMeditationSession extends Document {
-  userId: Types.ObjectId;
+  userId: string;
   title: string; // Name of guide or custom session (e.g. "Mindful Breath")
   durationMinutes: number;
   completedAt: Date;
@@ -9,8 +9,7 @@ export interface IMeditationSession extends Document {
 
 const MeditationSessionSchema = new Schema<IMeditationSession>({
   userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: true,
   },
   title: {
@@ -28,5 +27,8 @@ const MeditationSessionSchema = new Schema<IMeditationSession>({
     default: Date.now,
   },
 });
+
+// Index for faster lookups by user
+MeditationSessionSchema.index({ userId: 1, completedAt: -1 });
 
 export const MeditationSession = model<IMeditationSession>('MeditationSession', MeditationSessionSchema);

@@ -1,7 +1,7 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 
 export interface ICrisisEvent extends Document {
-  userId: Types.ObjectId;
+  userId: string;
   message: string;
   status: 'detected' | 'resolved' | 'escalated';
   reportedAt: Date;
@@ -9,7 +9,7 @@ export interface ICrisisEvent extends Document {
 
 const CrisisEventSchema = new Schema<ICrisisEvent>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    userId: { type: String, required: true, index: true },
     message: { type: String, required: true },
     status: { type: String, enum: ['detected', 'resolved', 'escalated'], default: 'detected' },
     reportedAt: { type: Date, default: Date.now },

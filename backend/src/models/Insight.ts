@@ -1,7 +1,7 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 
 export interface IInsight extends Document {
-  userId: Types.ObjectId;
+  userId: string;
   title: string;
   description: string;
   metric?: string;
@@ -11,7 +11,7 @@ export interface IInsight extends Document {
 
 const InsightSchema = new Schema<IInsight>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    userId: { type: String, required: true, index: true },
     title: { type: String, required: true },
     description: { type: String, required: true },
     metric: { type: String },

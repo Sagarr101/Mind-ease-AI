@@ -1,7 +1,7 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 
 export interface IMood extends Document {
-  userId: Types.ObjectId;
+  userId: string;
   score: number; // 1: Awful, 2: Bad, 3: Okay, 4: Good, 5: Excellent
   tags: string[]; // e.g., ["stressed", "calm", "anxious", "happy"]
   note?: string;
@@ -10,8 +10,7 @@ export interface IMood extends Document {
 
 const MoodSchema = new Schema<IMood>({
   userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: true,
   },
   score: {
@@ -33,5 +32,8 @@ const MoodSchema = new Schema<IMood>({
     default: Date.now,
   },
 });
+
+// Index for faster lookups by user
+MoodSchema.index({ userId: 1, loggedAt: -1 });
 
 export const Mood = model<IMood>('Mood', MoodSchema);

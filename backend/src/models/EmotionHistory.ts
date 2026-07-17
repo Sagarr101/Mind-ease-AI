@@ -1,7 +1,7 @@
 import { Schema, model, Document, Types } from 'mongoose';
 
 export interface IEmotionHistory extends Document {
-  userId: Types.ObjectId;
+  userId: string;
   journalEntryId?: Types.ObjectId;
   detectedAt: Date;
   dominantEmotion: string;
@@ -11,7 +11,7 @@ export interface IEmotionHistory extends Document {
 
 const EmotionHistorySchema = new Schema<IEmotionHistory>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    userId: { type: String, required: true, index: true },
     journalEntryId: { type: Schema.Types.ObjectId, ref: 'Journal', default: undefined },
     detectedAt: { type: Date, default: Date.now, index: true },
     dominantEmotion: { type: String, required: true },

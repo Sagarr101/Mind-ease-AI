@@ -1,7 +1,7 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 
 export interface IJournal extends Document {
-  userId: Types.ObjectId;
+  userId: string;
   title: string;
   content: string;
   moodScore?: number; // Optional reference to mood rating at time of writing
@@ -13,8 +13,7 @@ export interface IJournal extends Document {
 const JournalSchema = new Schema<IJournal>(
   {
     userId: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
+      type: String,
       required: true,
     },
     title: {
@@ -43,5 +42,8 @@ const JournalSchema = new Schema<IJournal>(
     timestamps: true,
   }
 );
+
+// Index for faster lookups by user
+JournalSchema.index({ userId: 1, createdAt: -1 });
 
 export const Journal = model<IJournal>('Journal', JournalSchema);

@@ -1,7 +1,7 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 
 export interface IWellnessReport extends Document {
-  userId: Types.ObjectId;
+  userId: string;
   startDate: Date;
   endDate: Date;
   averageMood: number;
@@ -13,8 +13,7 @@ export interface IWellnessReport extends Document {
 
 const WellnessReportSchema = new Schema<IWellnessReport>({
   userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,
     required: true,
   },
   startDate: {
@@ -47,5 +46,8 @@ const WellnessReportSchema = new Schema<IWellnessReport>({
     default: Date.now,
   },
 });
+
+// Index for faster lookups by user
+WellnessReportSchema.index({ userId: 1, createdAt: -1 });
 
 export const WellnessReport = model<IWellnessReport>('WellnessReport', WellnessReportSchema);
