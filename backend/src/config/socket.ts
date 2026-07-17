@@ -1,7 +1,7 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
-import { User } from '../models/User';
+import { prisma } from '../config/db';
 import { ChatMessage } from '../models/ChatMessage';
 import { Conversation } from '../models/Conversation';
 import { analyzeSentimentAndRespond, classifyLocalSentiment } from '../services/aiService';
@@ -41,14 +41,16 @@ export const initSocket = (server: HttpServer): Server => {
       const secret = process.env.JWT_SECRET || 'mindease_development_jwt_secret_token_12345';
       const decoded = jwt.verify(token, secret) as { id: string };
 
-      const user = await User.findById(decoded.id).select('-passwordHash');
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+      });
       if (!user) {
         return next(new Error('Authentication error: User not found'));
       }
 
       // Attach user details to socket data context
       socket.data = {
-        userId: user._id.toString(),
+        userId: user.id,
         username: user.username,
         conversationId: undefined,
       };
